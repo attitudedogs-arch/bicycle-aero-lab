@@ -94,3 +94,11 @@ The shared project already contains the CFD-ready geometry milestone from the pr
 - [x] Add drag-to-adjust behavior for rotation and vertical alignment in the 3D viewport.
 - [x] Keep numeric transform inputs and saved metadata synchronized with drag changes.
 - [x] Add clear selection and reset affordances, then verify desktop and mobile behavior before saving a checkpoint.
+
+## Next milestone — realistic procedural preview
+
+- [x] Audit the current addBike geometry, materials, shadow setup, and rebuild behavior.
+- [x] Replace thin stick-like primitives with rounded frame tubes, real wheel depth, hubs, spokes, cockpit, saddle, crankset, and articulated rider joints.
+- [x] Add restrained material variation, contact shadows, environment reflection, and a performance-conscious mesh budget.
+- [x] Preserve optional deep-section wheels, custom parts, local GLB/GLTF overrides, and transform controls.
+- [x] Verify visual realism, cleanup, and responsive behavior, then save a checkpoint.

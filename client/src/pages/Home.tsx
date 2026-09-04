@@ -82,44 +82,59 @@ function makeLine(points: THREE.Vector3[], color: string, opacity = 0.68) {
 function addBike(scene: THREE.Scene, subjectModel: string, customPart: string, riderPreset: string) {
   const bike = new THREE.Group();
   bike.name = `bicycle-and-rider / ${subjectModel}`;
-  const modelColor = subjectModel.includes("Time trial") ? 0x324b5b : subjectModel.includes("Gravel") ? 0x4f4b3f : 0x27313b;
-  const carbon = new THREE.MeshStandardMaterial({ color: modelColor, roughness: 0.34, metalness: 0.6 });
-  const tire = new THREE.MeshStandardMaterial({ color: 0x11161b, roughness: 0.85 });
-  const copperMat = new THREE.MeshStandardMaterial({ color: 0xc96b3b, roughness: 0.3, metalness: 0.45 });
-  const skin = new THREE.MeshStandardMaterial({ color: 0xc88f72, roughness: 0.7 });
-  const kit = new THREE.MeshStandardMaterial({ color: 0x667f8b, roughness: 0.55 });
-
-  const wheel = (x: number) => {
-    const w = new THREE.Mesh(new THREE.TorusGeometry(0.58, 0.025, 10, 48), tire);
-    w.rotation.y = Math.PI / 2; w.position.set(x, 0.6, 0); bike.add(w);
-    const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.08, 12), copperMat);
-    hub.rotation.z = Math.PI / 2; hub.position.set(x, 0.6, 0); bike.add(hub);
+  const modelColor = subjectModel.includes("Time trial") ? 0x36596a : subjectModel.includes("Gravel") ? 0x62584a : 0x273b45;
+  const carbon = new THREE.MeshStandardMaterial({ color: modelColor, roughness: 0.28, metalness: 0.55 });
+  const carbonEdge = new THREE.MeshStandardMaterial({ color: 0x17262c, roughness: 0.35, metalness: 0.42 });
+  const tire = new THREE.MeshStandardMaterial({ color: 0x0d1114, roughness: 0.92, metalness: 0.02 });
+  const rim = new THREE.MeshStandardMaterial({ color: 0xa8b6b8, roughness: 0.24, metalness: 0.78 });
+  const copperMat = new THREE.MeshStandardMaterial({ color: 0xd27545, roughness: 0.25, metalness: 0.5 });
+  const skin = new THREE.MeshStandardMaterial({ color: 0xc78a70, roughness: 0.72 });
+  const kit = new THREE.MeshStandardMaterial({ color: 0x6c8792, roughness: 0.5, metalness: 0.04 });
+  const kitDark = new THREE.MeshStandardMaterial({ color: 0x2c3e48, roughness: 0.63 });
+  const visor = new THREE.MeshStandardMaterial({ color: 0x142229, roughness: 0.14, metalness: 0.36, transparent: true, opacity: 0.78 });
+  const addMesh = <T extends THREE.Object3D>(mesh: T, parent: THREE.Object3D = bike, cast = true) => { mesh.castShadow = cast; mesh.receiveShadow = true; parent.add(mesh); return mesh; };
+  const tube = (a: THREE.Vector3, b: THREE.Vector3, radius = 0.05, material = carbon, parent: THREE.Object3D = bike) => {
+    const direction = new THREE.Vector3().subVectors(b, a); const length = direction.length();
+    const mesh = new THREE.Mesh(new THREE.CapsuleGeometry(radius, Math.max(0.05, length - radius * 1.8), 5, 10), material);
+    mesh.position.copy(a).add(b).multiplyScalar(0.5); mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.normalize());
+    return addMesh(mesh, parent);
   };
-  wheel(-1.05); wheel(1.05);
-  const tube = (a: THREE.Vector3, b: THREE.Vector3, radius = 0.045, material = carbon) => {
-    const direction = new THREE.Vector3().subVectors(b, a);
-    const mesh = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, direction.length(), 10), material);
-    mesh.position.copy(a).add(b).multiplyScalar(0.5);
-    mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.normalize());
-    bike.add(mesh);
+  const wheel = (x: number, deep = false) => {
+    const wheelGroup = new THREE.Group(); wheelGroup.position.set(x, 0.6, 0); bike.add(wheelGroup);
+    const tireMesh = new THREE.Mesh(new THREE.TorusGeometry(0.58, 0.038, 10, 64), tire); tireMesh.rotation.y = Math.PI / 2; addMesh(tireMesh, wheelGroup);
+    const rimMesh = new THREE.Mesh(new THREE.TorusGeometry(0.55, deep ? 0.085 : 0.028, 10, 64), deep ? carbonEdge : rim); rimMesh.rotation.y = Math.PI / 2; addMesh(rimMesh, wheelGroup);
+    const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.13, 12), copperMat); hub.rotation.z = Math.PI / 2; addMesh(hub, wheelGroup);
+    for (let i = 0; i < 12; i++) {
+      const theta = (i / 12) * Math.PI * 2;
+      const edge = new THREE.Vector3(0, Math.sin(theta) * 0.51, Math.cos(theta) * 0.51);
+      tube(new THREE.Vector3(0, 0, 0), edge, 0.006, rim, wheelGroup);
+      tube(new THREE.Vector3(0.025, 0, 0), edge.clone().multiplyScalar(0.96), 0.004, rim, wheelGroup);
+    }
   };
-  const rear = new THREE.Vector3(-1.05, 0.6, 0), crankPoint = new THREE.Vector3(-0.16, 0.56, 0), head = new THREE.Vector3(0.69, 0.88, 0), seat = new THREE.Vector3(-0.48, 1.16, 0);
-  tube(rear, crankPoint); tube(rear, seat); tube(seat, crankPoint); tube(crankPoint, head); tube(seat, head, 0.052, copperMat);
-  tube(head, new THREE.Vector3(1.05, 0.6, 0), 0.04); tube(head, new THREE.Vector3(0.98, 1.08, 0), 0.035);
-  tube(new THREE.Vector3(0.95, 1.08, 0), new THREE.Vector3(0.62, 1.1, 0), 0.035, copperMat);
-  const saddle = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.045, 0.1), carbon); saddle.position.set(-0.48, 1.2, 0); bike.add(saddle);
-  const crankDisc = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.035, 16), copperMat); crankDisc.rotation.x = Math.PI / 2; crankDisc.position.set(-0.16, 0.56, 0); bike.add(crankDisc);
-
-  // Simplified rider, fixed aero position.
-  const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.22, 0.54, 6, 12), kit); torso.rotation.z = riderPreset.includes("upright") ? -0.48 : -0.98; torso.position.set(-0.02, riderPreset.includes("upright") ? 1.48 : 1.58, 0); bike.add(torso);
-  const headMesh = new THREE.Mesh(new THREE.SphereGeometry(0.16, 18, 12), skin); headMesh.position.set(0.38, 1.86, 0); bike.add(headMesh);
-  const helmet = new THREE.Mesh(new THREE.SphereGeometry(0.17, 18, 12, 0, Math.PI * 2, 0, Math.PI / 1.75), carbon); helmet.position.set(0.38, 1.9, 0); bike.add(helmet);
-  tube(new THREE.Vector3(0.12, 1.52, 0), new THREE.Vector3(0.62, 1.16, 0), 0.065, skin);
-  tube(new THREE.Vector3(-0.17, 1.34, 0), new THREE.Vector3(-0.16, 0.72, 0), 0.075, kit);
-  tube(new THREE.Vector3(-0.16, 0.72, 0), new THREE.Vector3(0.22, 0.55, 0), 0.045, skin);
-  if (customPart === "Aero bottle") { const bottle = new THREE.Mesh(new THREE.CapsuleGeometry(0.07, 0.24, 5, 10), copperMat); bottle.rotation.z = -0.95; bottle.position.set(-0.28, 0.78, 0.08); bike.add(bottle); }
-  if (customPart === "Deep-section wheels") { bike.scale.set(1.12, 1.12, 1.12); }
-  else { bike.scale.set(1.12, 1.12, 1.12); }
+  const deepWheels = subjectModel.includes("Time trial") || customPart === "Deep-section wheels";
+  wheel(-1.05, deepWheels); wheel(1.05, deepWheels);
+  const rear = new THREE.Vector3(-1.05, 0.6, 0), crank = new THREE.Vector3(-0.16, 0.6, 0), head = new THREE.Vector3(0.68, 0.88, 0), seat = new THREE.Vector3(-0.5, 1.15, 0);
+  tube(rear, crank, 0.048); tube(rear, seat, 0.045); tube(seat, crank, 0.055); tube(crank, head, 0.06); tube(seat, head, 0.055, copperMat);
+  tube(new THREE.Vector3(-1.05, 0.6, -0.06), new THREE.Vector3(-0.5, 1.15, -0.06), 0.022, carbonEdge); tube(new THREE.Vector3(-1.05, 0.6, 0.06), new THREE.Vector3(-0.5, 1.15, 0.06), 0.022, carbonEdge);
+  const forkAxle = new THREE.Vector3(1.05, 0.6, 0); tube(head, forkAxle, 0.042, carbonEdge); tube(new THREE.Vector3(0.72, 0.94, -0.055), new THREE.Vector3(1.05, 0.6, -0.055), 0.028, carbon); tube(new THREE.Vector3(0.72, 0.94, 0.055), new THREE.Vector3(1.05, 0.6, 0.055), 0.028, carbon);
+  tube(head, new THREE.Vector3(0.79, 1.2, 0), 0.034, carbonEdge);
+  const handlebar = new THREE.Vector3(0.79, 1.2, 0); tube(handlebar, new THREE.Vector3(0.7, 1.24, -0.2), 0.026, copperMat); tube(handlebar, new THREE.Vector3(0.7, 1.24, 0.2), 0.026, copperMat); tube(new THREE.Vector3(0.7, 1.24, -0.2), new THREE.Vector3(0.58, 1.14, -0.2), 0.022, carbonEdge); tube(new THREE.Vector3(0.7, 1.24, 0.2), new THREE.Vector3(0.58, 1.14, 0.2), 0.022, carbonEdge);
+  const saddle = new THREE.Mesh(new THREE.CapsuleGeometry(0.09, 0.2, 5, 8), carbonEdge); saddle.rotation.z = Math.PI / 2; saddle.position.set(-0.5, 1.2, 0); addMesh(saddle);
+  tube(new THREE.Vector3(-0.5, 1.16, 0), new THREE.Vector3(-0.5, 1.27, 0), 0.022, carbonEdge);
+  const crankset = new THREE.Group(); crankset.position.copy(crank); bike.add(crankset); const chainring = new THREE.Mesh(new THREE.TorusGeometry(0.115, 0.014, 6, 24), copperMat); chainring.rotation.x = Math.PI / 2; addMesh(chainring, crankset); const spindle = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.28, 8), carbonEdge); spindle.rotation.x = Math.PI / 2; addMesh(spindle, crankset); tube(new THREE.Vector3(0, 0, 0.02), new THREE.Vector3(0.14, 0.03, 0.02), 0.014, copperMat, crankset); tube(new THREE.Vector3(0, 0, -0.02), new THREE.Vector3(-0.13, -0.04, -0.02), 0.014, copperMat, crankset);
+  const upright = riderPreset.includes("upright"); const hip = new THREE.Vector3(-0.2, upright ? 1.4 : 1.48, 0); const shoulder = new THREE.Vector3(0.28, upright ? 1.7 : 1.77, 0); const headPos = new THREE.Vector3(0.48, upright ? 1.92 : 1.98, 0);
+  const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.22, 0.48, 6, 12), kit); torso.rotation.z = upright ? -0.34 : -0.82; torso.position.copy(shoulder).add(hip).multiplyScalar(0.5); addMesh(torso);
+  const neck = new THREE.Mesh(new THREE.CapsuleGeometry(0.075, 0.08, 5, 8), skin); neck.position.set(0.39, headPos.y - 0.13, 0); addMesh(neck);
+  const headMesh = new THREE.Mesh(new THREE.SphereGeometry(0.145, 18, 12), skin); headMesh.position.copy(headPos); addMesh(headMesh);
+  const helmet = new THREE.Mesh(new THREE.SphereGeometry(0.17, 18, 12, 0, Math.PI * 2, 0, Math.PI / 1.7), carbonEdge); helmet.position.set(headPos.x, headPos.y + 0.04, 0); addMesh(helmet);
+  const visorMesh = new THREE.Mesh(new THREE.CapsuleGeometry(0.035, 0.11, 4, 8), visor); visorMesh.rotation.z = Math.PI / 2; visorMesh.position.set(headPos.x + 0.11, headPos.y + 0.015, -0.02); addMesh(visorMesh);
+  const elbowNear = new THREE.Vector3(0.22, shoulder.y - 0.12, -0.12), handNear = new THREE.Vector3(0.64, 1.24, -0.16); tube(shoulder, elbowNear, 0.065, kit); tube(elbowNear, handNear, 0.052, skin); const elbowFar = new THREE.Vector3(0.22, shoulder.y - 0.12, 0.12), handFar = new THREE.Vector3(0.64, 1.24, 0.16); tube(shoulder, elbowFar, 0.065, kit); tube(elbowFar, handFar, 0.052, skin);
+  const kneeNear = new THREE.Vector3(-0.28, 1.05, -0.1), ankleNear = new THREE.Vector3(-0.16, 0.69, -0.1); tube(hip, kneeNear, 0.075, kitDark); tube(kneeNear, ankleNear, 0.054, skin); const kneeFar = new THREE.Vector3(-0.2, 1.02, 0.1), ankleFar = new THREE.Vector3(0.02, 0.66, 0.1); tube(hip, kneeFar, 0.075, kitDark); tube(kneeFar, ankleFar, 0.054, skin);
+  const shoeNear = new THREE.Mesh(new THREE.CapsuleGeometry(0.045, 0.18, 5, 8), carbonEdge); shoeNear.rotation.z = Math.PI / 2; shoeNear.position.set(-0.04, 0.65, -0.1); addMesh(shoeNear); const shoeFar = shoeNear.clone(); shoeFar.position.z = 0.1; addMesh(shoeFar);
+  if (customPart === "Aero bottle") { const bottle = new THREE.Mesh(new THREE.CapsuleGeometry(0.065, 0.24, 5, 10), copperMat); bottle.rotation.z = -0.95; bottle.position.set(-0.3, 0.8, 0.08); addMesh(bottle); }
+  if (customPart === "Custom handlebar preview") { tube(new THREE.Vector3(0.74, 1.21, -0.28), new THREE.Vector3(0.52, 1.3, -0.28), 0.035, copperMat); tube(new THREE.Vector3(0.74, 1.21, 0.28), new THREE.Vector3(0.52, 1.3, 0.28), 0.035, copperMat); }
+  bike.scale.setScalar(1.12);
+  bike.traverse((node) => { if (node instanceof THREE.Mesh) { node.castShadow = true; node.receiveShadow = true; } });
   scene.add(bike);
   return bike;
 }
@@ -151,9 +166,11 @@ function Scene({ windAngle, airflow, resetSignal, subjectModel, customPart, ride
     let azimuth = 0.62; let elevation = 0.28; let radius = 6.8;
     const updateCamera = () => { const horizontal = Math.cos(elevation) * radius; camera.position.set(Math.sin(azimuth) * horizontal, target.y + Math.sin(elevation) * radius, Math.cos(azimuth) * horizontal); camera.lookAt(target); };
     updateCamera();
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false }); renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5)); renderer.shadowMap.enabled = true; host.current.appendChild(renderer.domElement);
-    const ambient = new THREE.HemisphereLight(0xdef3f2, 0x172027, 2.1); scene.add(ambient);
-    const key = new THREE.DirectionalLight(0xffe2c8, 2.2); key.position.set(-3, 5, 4); key.castShadow = true; scene.add(key);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false }); renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.35)); renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.08; renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap; host.current.appendChild(renderer.domElement);
+    const ambient = new THREE.HemisphereLight(0xd9f0ef, 0x11191e, 1.9); scene.add(ambient);
+    const key = new THREE.DirectionalLight(0xffe2c8, 3.1); key.position.set(-3.5, 5.5, 4.5); key.castShadow = true; key.shadow.mapSize.set(1024, 1024); key.shadow.camera.near = 0.5; key.shadow.camera.far = 15; key.shadow.camera.left = -5; key.shadow.camera.right = 5; key.shadow.camera.top = 4; key.shadow.camera.bottom = -2; scene.add(key);
+    const rimLight = new THREE.DirectionalLight(0x82c8d4, 1.7); rimLight.position.set(3, 2.8, -4); scene.add(rimLight);
+    const fillLight = new THREE.PointLight(0xc96b3b, 0.8, 8); fillLight.position.set(-1.8, 1.8, 1.8); scene.add(fillLight);
     const surfaceColor = surfaceType.includes("sand") ? 0x5d5141 : surfaceType.includes("soil") ? 0x4b4037 : surfaceType.includes("cement") ? 0x394047 : 0x182127;
     const floor = new THREE.Mesh(new THREE.PlaneGeometry(12, 5), new THREE.MeshStandardMaterial({ color: surfaceColor, roughness: 0.9, metalness: 0.05 })); floor.rotation.x = -Math.PI / 2; floor.position.y = -0.04; floor.receiveShadow = true; scene.add(floor);
     const tunnel = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(7, 3, 3.2)), new THREE.LineBasicMaterial({ color: 0x607780, transparent: true, opacity: 0.32 })); tunnel.position.y = 1.2; scene.add(tunnel);
@@ -190,7 +207,7 @@ function Scene({ windAngle, airflow, resetSignal, subjectModel, customPart, ride
     const resize = () => { if (!host.current) return; const { width, height } = host.current.getBoundingClientRect(); camera.aspect = width / height; camera.updateProjectionMatrix(); renderer.setSize(width, height, false); };
     const animate = () => { frame += 0.006; air.position.x = airflow ? Math.sin(frame) * 0.05 : 0; bike.position.y = Math.sin(frame * 0.55) * 0.008; renderer.render(scene, camera); raf = requestAnimationFrame(animate); };
     resize(); window.addEventListener("resize", resize); animate();
-    return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", resize); canvas.removeEventListener("pointerdown", onPointerDown); canvas.removeEventListener("pointermove", onPointerMove); canvas.removeEventListener("pointerup", onPointerUp); canvas.removeEventListener("pointercancel", onPointerUp); canvas.removeEventListener("wheel", onWheel); loadedAssets.forEach((asset) => asset.traverse((node) => { if (node instanceof THREE.Mesh) { node.geometry.dispose(); if (Array.isArray(node.material)) node.material.forEach((material) => material.dispose()); else node.material.dispose(); } })); renderer.dispose(); host.current?.removeChild(renderer.domElement); };
+    return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", resize); canvas.removeEventListener("pointerdown", onPointerDown); canvas.removeEventListener("pointermove", onPointerMove); canvas.removeEventListener("pointerup", onPointerUp); canvas.removeEventListener("pointercancel", onPointerUp); canvas.removeEventListener("wheel", onWheel); scene.traverse((node) => { if (node instanceof THREE.Mesh || node instanceof THREE.Line || node instanceof THREE.LineSegments) { node.geometry.dispose(); const materials = Array.isArray(node.material) ? node.material : [node.material]; materials.forEach((material) => material.dispose()); } }); renderer.dispose(); host.current?.removeChild(renderer.domElement); };
   }, [windAngle, airflow, resetSignal, subjectModel, customPart, riderPreset, surfaceType, assetUrls.bicycle, assetUrls.rider, assetUrls.custom, assetTransforms]);
   return <div ref={host} className="scene-host" aria-label={`Interactive 3D ${subjectModel} with ${riderPreset} and ${customPart}`} />;
 }
