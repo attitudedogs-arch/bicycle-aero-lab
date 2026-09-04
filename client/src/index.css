@@ -142,3 +142,19 @@ input[type=range] { width: 100%; accent-color: #c96b3b; height: 4px; }
   .geometry-grid { grid-template-columns: 1fr; border-left: 0; border-top: 1px solid #dddcd4; padding: 18px 0 0; gap: 16px; }
   .geometry-status { border-top: 0; padding-top: 0; }
 }
+
+
+.geometry-status-head { width: 100%; display: flex; align-items: center; justify-content: space-between; }
+.geometry-status-head > svg { color: #548a82; }
+.geometry-status.is-prepared > strong { color: #548a82; }
+.prepared-stamp { color: #548a82; font-family: 'IBM Plex Mono', monospace; font-size: 9px; }
+.geometry-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 5px; }
+.geometry-actions .export-button { margin-top: 0; }
+.manifest-button { display: inline-flex; align-items: center; gap: 5px; border: 1px solid #d8d9d2; background: #fffefa; color: #667472; padding: 8px 9px; border-radius: 4px; font-family: 'IBM Plex Mono', monospace; font-size: 9px; transition: background .16s ease-out, border-color .16s ease-out, transform .16s ease-out; }
+.manifest-button:hover:not(:disabled) { background: #eef3f0; border-color: #b4ccc9; transform: translateY(-1px); }
+.manifest-button:active:not(:disabled) { transform: scale(.97); }
+.manifest-button:disabled { color: #aeb4b0; background: #f4f3ee; cursor: not-allowed; }
+@media (max-width: 680px) {
+  .geometry-actions { width: 100%; }
+  .geometry-actions button { flex: 1; justify-content: center; }
+}

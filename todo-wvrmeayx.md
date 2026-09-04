@@ -11,3 +11,10 @@
 ## Notes
 
 The shared project already contains the CFD-ready geometry milestone from the prior session. This session preserves those changes and layers responsive behavior and geometry-panel styling on top.
+
+## Next milestone — geometry export preparation
+
+- [x] Add an explicit export-preparation state for the geometry contract.
+- [x] Surface a compact export manifest with dimensions, posture, and readiness checks.
+- [x] Add clear success feedback without implying a real CAD or CFD file has been generated.
+- [x] Verify the flow on desktop and mobile, then save a checkpoint.
