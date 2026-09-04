@@ -25,3 +25,11 @@ The shared project already contains the CFD-ready geometry milestone from the pr
 - [x] Add a history drawer or panel with case metadata and restore actions.
 - [x] Persist saved cases across refreshes without touching backend code.
 - [x] Verify save, restore, delete, and empty states on desktop and mobile, then save a checkpoint.
+
+## Next milestone — deeper simulation definition
+
+- [x] Add explicit steady-flow assumptions and operating-condition details.
+- [x] Add solver model, turbulence, convergence, and mesh-intent settings.
+- [x] Show a time-evolving readiness summary as settings become defined.
+- [x] Include the detailed settings in saved cases and manifests.
+- [x] Verify the expanded workflow on desktop and mobile, then save a checkpoint.
