@@ -56,3 +56,11 @@ The shared project already contains the CFD-ready geometry milestone from the pr
 - [x] Add location, weather, terrain, surface, slope, and directional airflow controls.
 - [x] Connect the expanded case definition to readiness, saved cases, manifests, and preview labels.
 - [x] Verify the richer builder on desktop and mobile, then save a checkpoint.
+
+## Next milestone — local 3D asset workflow
+
+- [x] Add local GLB/GLTF file inputs for bicycle, rider, and custom-part roles.
+- [x] Load compatible local assets into the 3D preview with a procedural fallback when no asset is selected.
+- [x] Show asset names, file types, size, and local-only status without uploading files.
+- [x] Include asset metadata in saved cases and manifests where available.
+- [x] Verify empty, selected, invalid, and reset states on desktop and mobile, then save a checkpoint.
