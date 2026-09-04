@@ -1,25 +1,124 @@
-import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
-import { Streamdown } from 'streamdown';
+// Bicycle Aero Lab — Wind-Tunnel Instrument direction. The viewport is the observation bay; controls expose measurable physical variables.
+import { useEffect, useRef, useState } from "react";
+import * as THREE from "three";
+import { Activity, ChevronDown, CircleHelp, Gauge, Layers3, Play, RotateCcw, Settings2, Wind, Zap } from "lucide-react";
 
-/**
- * All content in this page are only for example, replace with your own feature implementation
- * When building pages, remember your instructions in Frontend Best Practices, Design Guide and Common Pitfalls
- */
+const copper = "#c96b3b";
+const blue = "#78c9d8";
+
+function makeLine(points: THREE.Vector3[], color: string, opacity = 0.68) {
+  const geometry = new THREE.BufferGeometry().setFromPoints(points);
+  const material = new THREE.LineBasicMaterial({ color, transparent: true, opacity });
+  return new THREE.Line(geometry, material);
+}
+
+function addBike(scene: THREE.Scene) {
+  const bike = new THREE.Group();
+  bike.name = "bicycle-and-rider";
+  const carbon = new THREE.MeshStandardMaterial({ color: 0x27313b, roughness: 0.34, metalness: 0.6 });
+  const tire = new THREE.MeshStandardMaterial({ color: 0x11161b, roughness: 0.85 });
+  const copperMat = new THREE.MeshStandardMaterial({ color: 0xc96b3b, roughness: 0.3, metalness: 0.45 });
+  const skin = new THREE.MeshStandardMaterial({ color: 0xc88f72, roughness: 0.7 });
+  const kit = new THREE.MeshStandardMaterial({ color: 0x667f8b, roughness: 0.55 });
+
+  const wheel = (x: number) => {
+    const w = new THREE.Mesh(new THREE.TorusGeometry(0.58, 0.025, 10, 48), tire);
+    w.rotation.y = Math.PI / 2; w.position.set(x, 0.6, 0); bike.add(w);
+    const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.08, 12), copperMat);
+    hub.rotation.z = Math.PI / 2; hub.position.set(x, 0.6, 0); bike.add(hub);
+  };
+  wheel(-1.05); wheel(1.05);
+  const tube = (a: THREE.Vector3, b: THREE.Vector3, radius = 0.045, material = carbon) => {
+    const direction = new THREE.Vector3().subVectors(b, a);
+    const mesh = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, direction.length(), 10), material);
+    mesh.position.copy(a).add(b).multiplyScalar(0.5);
+    mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.normalize());
+    bike.add(mesh);
+  };
+  const rear = new THREE.Vector3(-1.05, 0.6, 0), crankPoint = new THREE.Vector3(-0.16, 0.56, 0), head = new THREE.Vector3(0.69, 0.88, 0), seat = new THREE.Vector3(-0.48, 1.16, 0);
+  tube(rear, crankPoint); tube(rear, seat); tube(seat, crankPoint); tube(crankPoint, head); tube(seat, head, 0.052, copperMat);
+  tube(head, new THREE.Vector3(1.05, 0.6, 0), 0.04); tube(head, new THREE.Vector3(0.98, 1.08, 0), 0.035);
+  tube(new THREE.Vector3(0.95, 1.08, 0), new THREE.Vector3(0.62, 1.1, 0), 0.035, copperMat);
+  const saddle = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.045, 0.1), carbon); saddle.position.set(-0.48, 1.2, 0); bike.add(saddle);
+  const crankDisc = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.035, 16), copperMat); crankDisc.rotation.x = Math.PI / 2; crankDisc.position.set(-0.16, 0.56, 0); bike.add(crankDisc);
+
+  // Simplified rider, fixed aero position.
+  const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.22, 0.54, 6, 12), kit); torso.rotation.z = -0.98; torso.position.set(-0.02, 1.58, 0); bike.add(torso);
+  const headMesh = new THREE.Mesh(new THREE.SphereGeometry(0.16, 18, 12), skin); headMesh.position.set(0.38, 1.86, 0); bike.add(headMesh);
+  const helmet = new THREE.Mesh(new THREE.SphereGeometry(0.17, 18, 12, 0, Math.PI * 2, 0, Math.PI / 1.75), carbon); helmet.position.set(0.38, 1.9, 0); bike.add(helmet);
+  tube(new THREE.Vector3(0.12, 1.52, 0), new THREE.Vector3(0.62, 1.16, 0), 0.065, skin);
+  tube(new THREE.Vector3(-0.17, 1.34, 0), new THREE.Vector3(-0.16, 0.72, 0), 0.075, kit);
+  tube(new THREE.Vector3(-0.16, 0.72, 0), new THREE.Vector3(0.22, 0.55, 0), 0.045, skin);
+  bike.scale.set(1.12, 1.12, 1.12);
+  scene.add(bike);
+  return bike;
+}
+
+function addAirflow(scene: THREE.Scene, intensity: number) {
+  const group = new THREE.Group(); group.name = "airflow-streamlines";
+  for (let row = 0; row < 9; row++) {
+    const y = 0.2 + row * 0.28;
+    const z = -1.1 + (row % 3) * 0.55;
+    const points: THREE.Vector3[] = [];
+    for (let i = 0; i < 16; i++) {
+      const x = -3 + i * 0.42;
+      const disturbance = i > 6 ? Math.sin(i * 0.75 + row) * 0.11 * intensity * (i - 5) / 8 : 0;
+      points.push(new THREE.Vector3(x, y + disturbance, z + Math.sin(i * 0.5 + row) * 0.035));
+    }
+    group.add(makeLine(points, row % 3 === 0 ? copper : blue, row % 3 === 0 ? 0.78 : 0.46));
+  }
+  scene.add(group);
+  return group;
+}
+
+function Scene({ windAngle, airflow }: { windAngle: number; airflow: boolean }) {
+  const host = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!host.current) return;
+    const scene = new THREE.Scene(); scene.background = new THREE.Color(0x10171b);
+    const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100); camera.position.set(3.5, 2.2, 5.8); camera.lookAt(0, 0.95, 0);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false }); renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5)); renderer.shadowMap.enabled = true; host.current.appendChild(renderer.domElement);
+    const ambient = new THREE.HemisphereLight(0xdef3f2, 0x172027, 2.1); scene.add(ambient);
+    const key = new THREE.DirectionalLight(0xffe2c8, 2.2); key.position.set(-3, 5, 4); key.castShadow = true; scene.add(key);
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(12, 5), new THREE.MeshStandardMaterial({ color: 0x182127, roughness: 0.9, metalness: 0.05 })); floor.rotation.x = -Math.PI / 2; floor.position.y = -0.04; floor.receiveShadow = true; scene.add(floor);
+    const tunnel = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(7, 3, 3.2)), new THREE.LineBasicMaterial({ color: 0x607780, transparent: true, opacity: 0.32 })); tunnel.position.y = 1.2; scene.add(tunnel);
+    const bike = addBike(scene); const air = addAirflow(scene, airflow ? 1 : 0.42);
+    bike.rotation.y = THREE.MathUtils.degToRad(-windAngle * 0.18);
+    let frame = 0; let raf = 0;
+    const resize = () => { if (!host.current) return; const { width, height } = host.current.getBoundingClientRect(); camera.aspect = width / height; camera.updateProjectionMatrix(); renderer.setSize(width, height, false); };
+    const animate = () => { frame += 0.006; air.position.x = airflow ? Math.sin(frame) * 0.05 : 0; bike.position.y = Math.sin(frame * 0.55) * 0.008; renderer.render(scene, camera); raf = requestAnimationFrame(animate); };
+    resize(); window.addEventListener("resize", resize); animate();
+    return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", resize); renderer.dispose(); host.current?.removeChild(renderer.domElement); };
+  }, [windAngle, airflow]);
+  return <div ref={host} className="scene-host" aria-label="Interactive 3D bicycle and airflow preview" />;
+}
+
+function Metric({ label, value, unit, tone = "default" }: { label: string; value: string; unit?: string; tone?: "default" | "copper" }) {
+  return <div className={`metric ${tone === "copper" ? "metric-copper" : ""}`}><span>{label}</span><strong>{value}<small>{unit}</small></strong></div>;
+}
+
 export default function Home() {
-  // If theme is switchable in App.tsx, we can implement theme toggling like this:
-  // const { theme, toggleTheme } = useTheme();
-
-  return (
-    <div className="min-h-screen flex flex-col">
-      <main>
-        {/* Example: lucide-react for icons */}
-        <Loader2 className="animate-spin" />
-        Example Page
-        {/* Example: Streamdown for markdown rendering */}
-        <Streamdown>Any **markdown** content</Streamdown>
-        <Button variant="default">Example Button</Button>
-      </main>
-    </div>
-  );
+  const [speed, setSpeed] = useState(42);
+  const [windAngle, setWindAngle] = useState(0);
+  const [airflow, setAirflow] = useState(true);
+  const [running, setRunning] = useState(false);
+  const run = () => { setRunning(true); window.setTimeout(() => setRunning(false), 1400); };
+  return <main className="lab-shell">
+    <aside className="lab-rail">
+      <div className="brand-lockup"><img src="/manus-storage/bicycle-aero-lab-mark_3640483a.png" alt="" /><div><div className="eyebrow">BICYCLE AERO LAB / 01</div><div className="brand-name">Wind-tunnel instrument</div><div className="brand-subline"><span className="trace-rule" /> MEASURED AIR / ITERATION</div></div></div>
+      <div className="rail-section"><div className="eyebrow">EXPERIMENT</div><div className="experiment-name">Road bike / baseline</div><div className="status-row"><span className={`status-dot ${running ? "is-running" : ""}`} />{running ? "CALCULATING" : "READY TO RUN"}<span className="run-id">RUN 001</span></div></div>
+      <div className="rail-section"><div className="eyebrow">MODEL LIBRARY</div><button className="rail-select">Aero road / R-01 <ChevronDown size={14} /></button><button className="rail-select muted">Rider / fixed aero <ChevronDown size={14} /></button></div>
+      <div className="rail-section rail-note"><div className="eyebrow">PROTOTYPE NOTE</div><p>This visualizes the first instrument pass. Solver data will replace the preview field in the next stage.</p></div>
+      <div className="rail-bottom"><button className="icon-button"><Settings2 size={16} /></button><span>v0.1 / local study</span><CircleHelp size={15} /></div>
+    </aside>
+    <section className="lab-main">
+      <header className="topbar"><div><div className="eyebrow">OBSERVATION BAY / CASE 01</div><h1>See what the air is doing.</h1></div><div className="top-actions"><span className="data-chip"><span className="chip-dot" />SIMULATION PREVIEW</span><button className="ghost-button"><Layers3 size={15} /> Layers</button></div></header>
+      <div className="workspace-grid">
+        <section className="viewport-card"><div className="viewport-header"><div><span className="eyebrow">3D FLOW FIELD</span><div className="viewport-title">Single rider · steady external flow</div></div><div className="viewport-tools"><button className={`mini-toggle ${airflow ? "active" : ""}`} onClick={() => setAirflow(!airflow)}><Wind size={14} /> Streamlines</button><button className="mini-toggle"><RotateCcw size={14} /> Reset view</button></div></div><div className="viewport"><Scene windAngle={windAngle} airflow={airflow} /><div className="viewport-overlay"><span>VELOCITY MAGNITUDE</span><div className="legend"><i className="legend-cool" /> 0 <i className="legend-hot" /> 18 m/s</div></div><div className="sensor-tag sensor-inlet">S-01 / INLET</div><div className="sensor-tag sensor-wake">S-04 / WAKE FIELD</div><div className="calibration-line"><span>0</span><i /><i /><i /><i /><span>3.0 m</span></div><div className="axis"><span>Y</span><span>X</span><span>Z</span></div></div><div className="viewport-footer"><span><b className="live-mark" /> Geometry preview</span><span>Mesh status <strong>not generated</strong></span><span>Drag / rotate enabled in next build</span></div></section>
+        <aside className="results-card"><div className="card-kicker"><span className="eyebrow">RESULT LEDGER</span><span className="confidence">PREVIEW</span></div><div className="drag-readout"><span>Estimated drag force</span><strong>31.8<small>N</small></strong><span className="delta positive">↓ 4.2% vs reference</span></div><div className="metric-list"><Metric label="CdA" value="0.286" unit="m²" tone="copper" /><Metric label="Power at speed" value="287" unit="W" /><Metric label="Air density" value="1.225" unit="kg/m³" /><Metric label="Flow state" value="Steady" /></div><div className="result-note"><Zap size={14} /><span>Measured values will appear after a CFD case is completed.</span></div><div className="wake-inset"><img src="/manus-storage/bicycle-aero-lab-wake_a66155fa.png" alt="Preview of a bicycle wake field" /><span>WAKE PREVIEW / NEXT SOLVER PASS</span></div></aside>
+      </div>
+      <section className="control-strip" style={{ backgroundImage: "linear-gradient(90deg, rgba(248,247,242,.98) 0%, rgba(248,247,242,.94) 58%, rgba(248,247,242,.72) 100%), url('/manus-storage/bicycle-aero-lab-terrain_8efdba22.png')", backgroundSize: "cover", backgroundPosition: "right center" }}><div className="control-heading"><div className="eyebrow">CASE PARAMETERS</div><h2>Run the baseline before changing the shape.</h2><p>These controls define the first steady-flow experiment.</p></div><div className="control-field"><div className="field-label"><span><b className="field-trace" />Ground speed</span><strong>{speed} <small>km/h</small></strong></div><input type="range" min="10" max="80" value={speed} onChange={(e) => setSpeed(Number(e.target.value))} /></div><div className="control-field"><div className="field-label"><span><b className="field-trace" />Crosswind angle</span><strong>{windAngle > 0 ? "+" : ""}{windAngle} <small>°</small></strong></div><input type="range" min="-30" max="30" value={windAngle} onChange={(e) => setWindAngle(Number(e.target.value))} /></div><button className="run-button" onClick={run} disabled={running}><Play size={16} fill="currentColor" />{running ? "Calculating" : "Run baseline"}</button></section>
+      <footer className="lab-footer"><span><Gauge size={14} /> Solver: preview field / no CFD</span><span>SI units</span><span>Last saved just now</span></footer>
+    </section>
+  </main>;
 }
