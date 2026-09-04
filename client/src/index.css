@@ -388,3 +388,18 @@ input[type=range] { width: 100%; accent-color: #c96b3b; height: 4px; }
   .transform-numeric-grid { grid-template-columns: repeat(2, 1fr); }
   .origin-gizmo { right: 15px; bottom: 20px; transform: scale(.85); transform-origin: bottom right; }
 }
+
+
+.role-select { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 4px; margin-left: 4px; }
+.role-select > span { color: #929b97; font-size: 8px; }
+.role-select button { border: 1px solid #d2d9d3; background: transparent; color: #83908b; padding: 3px 6px; font-family: 'IBM Plex Mono', monospace; font-size: 7px; }
+.role-select button.selected { border-color: #86afa9; background: #e7f1ed; color: #4d827b; }
+.gizmo-drag-pad { position: absolute; right: 72px; bottom: 18px; display: grid; grid-template-columns: auto auto; align-items: center; gap: 2px 5px; width: 70px; padding: 5px 6px; border: 1px solid rgba(212,225,218,.55); border-radius: 3px; background: rgba(16,23,27,.72); color: #d6e3dd; cursor: crosshair; user-select: none; touch-action: none; }
+.gizmo-drag-pad span { grid-column: 1 / -1; color: #afc8bd; font-family: 'IBM Plex Mono', monospace; font-size: 6px; letter-spacing: .05em; }
+.gizmo-drag-pad b { color: #eed596; font-size: 13px; font-weight: 400; text-align: center; }
+.gizmo-drag-pad i { color: #d9754d; font-size: 13px; font-style: normal; text-align: center; }
+.gizmo-drag-pad:active { background: rgba(40,61,64,.9); }
+@media (max-width: 680px) {
+  .role-select { margin-left: 0; width: 100%; }
+  .gizmo-drag-pad { right: 54px; bottom: 14px; transform: scale(.88); transform-origin: bottom right; }
+}

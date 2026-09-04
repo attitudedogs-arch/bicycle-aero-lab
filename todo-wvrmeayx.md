@@ -87,3 +87,10 @@ The shared project already contains the CFD-ready geometry milestone from the pr
 - [x] Add alignment cues and a reset-to-origin action without obscuring the flow field.
 - [x] Persist calibration values in saved cases and manifests.
 - [x] Verify the calibration layer on desktop and mobile, then save a checkpoint.
+
+## Next milestone — draggable viewport gizmos
+
+- [x] Define a selected asset role and direct manipulation mode without disrupting orbit controls.
+- [x] Add drag-to-adjust behavior for rotation and vertical alignment in the 3D viewport.
+- [x] Keep numeric transform inputs and saved metadata synchronized with drag changes.
+- [x] Add clear selection and reset affordances, then verify desktop and mobile behavior before saving a checkpoint.
