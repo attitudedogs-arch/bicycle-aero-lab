@@ -79,3 +79,11 @@ The shared project already contains the CFD-ready geometry milestone from the pr
 - [x] Add compact transform controls with live preview updates and reset actions.
 - [x] Persist transform metadata in saved cases and manifests.
 - [x] Verify transform behavior and responsive controls on desktop and mobile, then save a checkpoint.
+
+## Next milestone — viewport calibration aids
+
+- [x] Add origin gizmos and visible X/Y/Z axis labels to the 3D viewport.
+- [x] Add precise numeric transform readouts and direct inputs for each asset role.
+- [x] Add alignment cues and a reset-to-origin action without obscuring the flow field.
+- [x] Persist calibration values in saved cases and manifests.
+- [x] Verify the calibration layer on desktop and mobile, then save a checkpoint.
