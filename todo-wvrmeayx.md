@@ -117,3 +117,11 @@ The shared project already contains the CFD-ready geometry milestone from the pr
 - [x] Refine frame tube proportions, rider seating/contact points, and material separation to reduce the Roblox-like appearance.
 - [x] Add explicit preview-versus-true-asset labeling and preserve local GLB/GLTF overrides.
 - [x] Verify the corrected preview on desktop and mobile, then save a checkpoint.
+
+## Next milestone — AirShaper-style simulation review
+
+- [x] Define physics-derived preview quantities for dynamic pressure, drag, lift proxy, and wake intensity.
+- [x] Add selectable wind-tunnel result layers for velocity, pressure, streamlines, and wake review.
+- [x] Add a simulation review toolbar, calibrated legends, probe readouts, and clear preview-versus-CFD messaging.
+- [x] Connect the review state to the current case inputs, solver timeline, saved cases, and manifests.
+- [x] Verify the simulation review on desktop and mobile, then save a checkpoint.

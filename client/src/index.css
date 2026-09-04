@@ -408,3 +408,8 @@ input[type=range] { width: 100%; accent-color: #c96b3b; height: 4px; }
 .quality-control { display: inline-flex; align-items: center; gap: 5px; border: 1px solid #c9d9d3; background: #f1f7f4; padding: 4px 6px; color: #66817a; font-family: 'IBM Plex Mono', monospace; font-size: 7px; }
 .quality-control select { border: 0; background: transparent; color: #4f736c; font-family: 'IBM Plex Mono', monospace; font-size: 8px; outline: none; }
 @media (max-width: 680px) { .quality-control { flex: 1; justify-content: space-between; } }
+
+
+.layer-control select { min-width: 72px; }
+.results-card .result-note { line-height: 1.45; }
+@media (max-width: 680px) { .viewport-tools { flex-wrap: wrap; } .layer-control select { min-width: 66px; } }
