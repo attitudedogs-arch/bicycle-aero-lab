@@ -1,18 +1,19 @@
-# Bicycle Aero Lab — CFD Preparation Milestone
+# Bicycle Aero Lab — CFD-Ready Geometry Milestone
 
-## Scientific inputs
+## Geometry contract
 
-- [x] Add speed, wind angle, air temperature, pressure, rider mass, bicycle mass, and geometry scale inputs.
-- [x] Show air-density provenance and distinguish user inputs from calculated values.
+- [x] Define the bicycle reference dimensions and coordinate system.
+- [x] Define rider reference dimensions and fixed aero posture.
+- [x] Show geometry scale and watertight/mesh-readiness status.
 
 ## Solver preparation
 
-- [x] Add a geometry-readiness panel for watertight geometry and mesh status.
-- [x] Add a solver workflow state: setup, mesh, solve, post-process, review.
-- [x] Keep preview values visibly separate from future CFD-calculated values.
+- [x] Add a geometry specification panel to the prototype.
+- [x] Add a solver-export preparation action with clear preview status.
+- [x] Keep the current 3D model visibly labelled as a simplified concept, not validated CAD.
 
 ## Validation
 
-- [x] Verify input controls and status transitions.
+- [x] Verify geometry values update correctly.
 - [x] Run TypeScript and production build checks.
-- [ ] Save the CFD-preparation checkpoint.
+- [ ] Save the CFD-ready geometry checkpoint.
