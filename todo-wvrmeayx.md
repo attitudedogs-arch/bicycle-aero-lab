@@ -41,3 +41,10 @@ The shared project already contains the CFD-ready geometry milestone from the pr
 - [x] Show the force-model basis and derived aerodynamic force readout.
 - [x] Include validation quantities in saved cases and manifests.
 - [x] Verify the validation layer on desktop and mobile, then save a checkpoint.
+
+## Next milestone — solver-run timeline
+
+- [x] Define queued, meshing, solving, review, and idle states for the frontend prototype.
+- [x] Add a run control and visible progress timeline with explanatory status text.
+- [x] Preserve the distinction between simulated UI progress and real CFD output.
+- [x] Verify reset and completion behavior on desktop and mobile, then save a checkpoint.
