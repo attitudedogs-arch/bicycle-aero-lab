@@ -102,3 +102,10 @@ The shared project already contains the CFD-ready geometry milestone from the pr
 - [x] Add restrained material variation, contact shadows, environment reflection, and a performance-conscious mesh budget.
 - [x] Preserve optional deep-section wheels, custom parts, local GLB/GLTF overrides, and transform controls.
 - [x] Verify visual realism, cleanup, and responsive behavior, then save a checkpoint.
+
+## Next milestone — preview quality modes
+
+- [x] Define low, balanced, and high-detail geometry budgets for the procedural fallback.
+- [x] Add a quality selector and connect it to wheel, spoke, tube, rider, and shadow detail.
+- [x] Persist the selected quality mode in saved cases and manifests.
+- [x] Verify the modes on desktop and mobile, then save a checkpoint.

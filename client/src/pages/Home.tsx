@@ -9,6 +9,7 @@ const blue = "#78c9d8";
 const savedCasesKey = "bicycle-aero-lab:saved-geometry-cases";
 
 type SolverStage = "idle" | "queued" | "meshing" | "solving" | "review";
+type QualityMode = "low" | "balanced" | "high";
 
 const solverStages: SolverStage[] = ["queued", "meshing", "solving", "review"];
 const solverStageLabels: Record<SolverStage, string> = { idle: "Idle", queued: "Queued", meshing: "Meshing", solving: "Solving", review: "Review" };
@@ -57,6 +58,7 @@ type SavedCase = {
   acceleration?: number;
   assetMeta?: Partial<Record<AssetRole, SavedAssetMeta>>;
   assetTransforms?: Partial<Record<AssetRole, RoleTransform>>;
+  qualityMode?: QualityMode;
 };
 
 function createCaseId() {
@@ -79,10 +81,11 @@ function makeLine(points: THREE.Vector3[], color: string, opacity = 0.68) {
   return new THREE.Line(geometry, material);
 }
 
-function addBike(scene: THREE.Scene, subjectModel: string, customPart: string, riderPreset: string) {
+function addBike(scene: THREE.Scene, subjectModel: string, customPart: string, riderPreset: string, qualityMode: QualityMode) {
   const bike = new THREE.Group();
   bike.name = `bicycle-and-rider / ${subjectModel}`;
   const modelColor = subjectModel.includes("Time trial") ? 0x36596a : subjectModel.includes("Gravel") ? 0x62584a : 0x273b45;
+  const detail = qualityMode === "high" ? { spokeCount: 18, wheelSegments: 72, tubeSegments: 8, riderSegments: 9 } : qualityMode === "low" ? { spokeCount: 8, wheelSegments: 32, tubeSegments: 4, riderSegments: 5 } : { spokeCount: 12, wheelSegments: 48, tubeSegments: 5, riderSegments: 6 };
   const carbon = new THREE.MeshStandardMaterial({ color: modelColor, roughness: 0.28, metalness: 0.55 });
   const carbonEdge = new THREE.MeshStandardMaterial({ color: 0x17262c, roughness: 0.35, metalness: 0.42 });
   const tire = new THREE.MeshStandardMaterial({ color: 0x0d1114, roughness: 0.92, metalness: 0.02 });
@@ -95,17 +98,17 @@ function addBike(scene: THREE.Scene, subjectModel: string, customPart: string, r
   const addMesh = <T extends THREE.Object3D>(mesh: T, parent: THREE.Object3D = bike, cast = true) => { mesh.castShadow = cast; mesh.receiveShadow = true; parent.add(mesh); return mesh; };
   const tube = (a: THREE.Vector3, b: THREE.Vector3, radius = 0.05, material = carbon, parent: THREE.Object3D = bike) => {
     const direction = new THREE.Vector3().subVectors(b, a); const length = direction.length();
-    const mesh = new THREE.Mesh(new THREE.CapsuleGeometry(radius, Math.max(0.05, length - radius * 1.8), 5, 10), material);
+    const mesh = new THREE.Mesh(new THREE.CapsuleGeometry(radius, Math.max(0.05, length - radius * 1.8), detail.tubeSegments, detail.tubeSegments * 2), material);
     mesh.position.copy(a).add(b).multiplyScalar(0.5); mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.normalize());
     return addMesh(mesh, parent);
   };
   const wheel = (x: number, deep = false) => {
     const wheelGroup = new THREE.Group(); wheelGroup.position.set(x, 0.6, 0); bike.add(wheelGroup);
-    const tireMesh = new THREE.Mesh(new THREE.TorusGeometry(0.58, 0.038, 10, 64), tire); tireMesh.rotation.y = Math.PI / 2; addMesh(tireMesh, wheelGroup);
-    const rimMesh = new THREE.Mesh(new THREE.TorusGeometry(0.55, deep ? 0.085 : 0.028, 10, 64), deep ? carbonEdge : rim); rimMesh.rotation.y = Math.PI / 2; addMesh(rimMesh, wheelGroup);
+    const tireMesh = new THREE.Mesh(new THREE.TorusGeometry(0.58, 0.038, qualityMode === "high" ? 12 : 8, detail.wheelSegments), tire); tireMesh.rotation.y = Math.PI / 2; addMesh(tireMesh, wheelGroup);
+    const rimMesh = new THREE.Mesh(new THREE.TorusGeometry(0.55, deep ? 0.085 : 0.028, qualityMode === "high" ? 12 : 8, detail.wheelSegments), deep ? carbonEdge : rim); rimMesh.rotation.y = Math.PI / 2; addMesh(rimMesh, wheelGroup);
     const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.13, 12), copperMat); hub.rotation.z = Math.PI / 2; addMesh(hub, wheelGroup);
-    for (let i = 0; i < 12; i++) {
-      const theta = (i / 12) * Math.PI * 2;
+    for (let i = 0; i < detail.spokeCount; i++) {
+      const theta = (i / detail.spokeCount) * Math.PI * 2;
       const edge = new THREE.Vector3(0, Math.sin(theta) * 0.51, Math.cos(theta) * 0.51);
       tube(new THREE.Vector3(0, 0, 0), edge, 0.006, rim, wheelGroup);
       tube(new THREE.Vector3(0.025, 0, 0), edge.clone().multiplyScalar(0.96), 0.004, rim, wheelGroup);
@@ -123,10 +126,10 @@ function addBike(scene: THREE.Scene, subjectModel: string, customPart: string, r
   tube(new THREE.Vector3(-0.5, 1.16, 0), new THREE.Vector3(-0.5, 1.27, 0), 0.022, carbonEdge);
   const crankset = new THREE.Group(); crankset.position.copy(crank); bike.add(crankset); const chainring = new THREE.Mesh(new THREE.TorusGeometry(0.115, 0.014, 6, 24), copperMat); chainring.rotation.x = Math.PI / 2; addMesh(chainring, crankset); const spindle = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.28, 8), carbonEdge); spindle.rotation.x = Math.PI / 2; addMesh(spindle, crankset); tube(new THREE.Vector3(0, 0, 0.02), new THREE.Vector3(0.14, 0.03, 0.02), 0.014, copperMat, crankset); tube(new THREE.Vector3(0, 0, -0.02), new THREE.Vector3(-0.13, -0.04, -0.02), 0.014, copperMat, crankset);
   const upright = riderPreset.includes("upright"); const hip = new THREE.Vector3(-0.2, upright ? 1.4 : 1.48, 0); const shoulder = new THREE.Vector3(0.28, upright ? 1.7 : 1.77, 0); const headPos = new THREE.Vector3(0.48, upright ? 1.92 : 1.98, 0);
-  const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.22, 0.48, 6, 12), kit); torso.rotation.z = upright ? -0.34 : -0.82; torso.position.copy(shoulder).add(hip).multiplyScalar(0.5); addMesh(torso);
+  const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.22, 0.48, detail.riderSegments, detail.riderSegments * 2), kit); torso.rotation.z = upright ? -0.34 : -0.82; torso.position.copy(shoulder).add(hip).multiplyScalar(0.5); addMesh(torso);
   const neck = new THREE.Mesh(new THREE.CapsuleGeometry(0.075, 0.08, 5, 8), skin); neck.position.set(0.39, headPos.y - 0.13, 0); addMesh(neck);
-  const headMesh = new THREE.Mesh(new THREE.SphereGeometry(0.145, 18, 12), skin); headMesh.position.copy(headPos); addMesh(headMesh);
-  const helmet = new THREE.Mesh(new THREE.SphereGeometry(0.17, 18, 12, 0, Math.PI * 2, 0, Math.PI / 1.7), carbonEdge); helmet.position.set(headPos.x, headPos.y + 0.04, 0); addMesh(helmet);
+  const headMesh = new THREE.Mesh(new THREE.SphereGeometry(0.145, detail.riderSegments * 2, detail.riderSegments), skin); headMesh.position.copy(headPos); addMesh(headMesh);
+  const helmet = new THREE.Mesh(new THREE.SphereGeometry(0.17, detail.riderSegments * 2, detail.riderSegments, 0, Math.PI * 2, 0, Math.PI / 1.7), carbonEdge); helmet.position.set(headPos.x, headPos.y + 0.04, 0); addMesh(helmet);
   const visorMesh = new THREE.Mesh(new THREE.CapsuleGeometry(0.035, 0.11, 4, 8), visor); visorMesh.rotation.z = Math.PI / 2; visorMesh.position.set(headPos.x + 0.11, headPos.y + 0.015, -0.02); addMesh(visorMesh);
   const elbowNear = new THREE.Vector3(0.22, shoulder.y - 0.12, -0.12), handNear = new THREE.Vector3(0.64, 1.24, -0.16); tube(shoulder, elbowNear, 0.065, kit); tube(elbowNear, handNear, 0.052, skin); const elbowFar = new THREE.Vector3(0.22, shoulder.y - 0.12, 0.12), handFar = new THREE.Vector3(0.64, 1.24, 0.16); tube(shoulder, elbowFar, 0.065, kit); tube(elbowFar, handFar, 0.052, skin);
   const kneeNear = new THREE.Vector3(-0.28, 1.05, -0.1), ankleNear = new THREE.Vector3(-0.16, 0.69, -0.1); tube(hip, kneeNear, 0.075, kitDark); tube(kneeNear, ankleNear, 0.054, skin); const kneeFar = new THREE.Vector3(-0.2, 1.02, 0.1), ankleFar = new THREE.Vector3(0.02, 0.66, 0.1); tube(hip, kneeFar, 0.075, kitDark); tube(kneeFar, ankleFar, 0.054, skin);
@@ -156,7 +159,7 @@ function addAirflow(scene: THREE.Scene, intensity: number) {
   return group;
 }
 
-function Scene({ windAngle, airflow, resetSignal, subjectModel, customPart, riderPreset, surfaceType, assetUrls, assetTransforms }: { windAngle: number; airflow: boolean; resetSignal: number; subjectModel: string; customPart: string; riderPreset: string; surfaceType: string; assetUrls: Partial<Record<AssetRole, string>>; assetTransforms: Record<AssetRole, RoleTransform> }) {
+function Scene({ windAngle, airflow, resetSignal, subjectModel, customPart, riderPreset, surfaceType, assetUrls, assetTransforms, qualityMode }: { windAngle: number; airflow: boolean; resetSignal: number; subjectModel: string; customPart: string; riderPreset: string; surfaceType: string; assetUrls: Partial<Record<AssetRole, string>>; assetTransforms: Record<AssetRole, RoleTransform>; qualityMode: QualityMode }) {
   const host = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!host.current) return;
@@ -175,7 +178,7 @@ function Scene({ windAngle, airflow, resetSignal, subjectModel, customPart, ride
     const floor = new THREE.Mesh(new THREE.PlaneGeometry(12, 5), new THREE.MeshStandardMaterial({ color: surfaceColor, roughness: 0.9, metalness: 0.05 })); floor.rotation.x = -Math.PI / 2; floor.position.y = -0.04; floor.receiveShadow = true; scene.add(floor);
     const tunnel = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(7, 3, 3.2)), new THREE.LineBasicMaterial({ color: 0x607780, transparent: true, opacity: 0.32 })); tunnel.position.y = 1.2; scene.add(tunnel);
     const originAxes = new THREE.AxesHelper(0.72); originAxes.position.set(0, 0.02, 0); scene.add(originAxes);
-    const bike = addBike(scene, subjectModel, customPart, riderPreset); const loadedAssets: THREE.Object3D[] = [];
+    const bike = addBike(scene, subjectModel, customPart, riderPreset, qualityMode); const loadedAssets: THREE.Object3D[] = [];
     const loader = new GLTFLoader();
     const loadRoleAsset = (role: AssetRole, url?: string) => {
       if (!url) return;
@@ -208,7 +211,7 @@ function Scene({ windAngle, airflow, resetSignal, subjectModel, customPart, ride
     const animate = () => { frame += 0.006; air.position.x = airflow ? Math.sin(frame) * 0.05 : 0; bike.position.y = Math.sin(frame * 0.55) * 0.008; renderer.render(scene, camera); raf = requestAnimationFrame(animate); };
     resize(); window.addEventListener("resize", resize); animate();
     return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", resize); canvas.removeEventListener("pointerdown", onPointerDown); canvas.removeEventListener("pointermove", onPointerMove); canvas.removeEventListener("pointerup", onPointerUp); canvas.removeEventListener("pointercancel", onPointerUp); canvas.removeEventListener("wheel", onWheel); scene.traverse((node) => { if (node instanceof THREE.Mesh || node instanceof THREE.Line || node instanceof THREE.LineSegments) { node.geometry.dispose(); const materials = Array.isArray(node.material) ? node.material : [node.material]; materials.forEach((material) => material.dispose()); } }); renderer.dispose(); host.current?.removeChild(renderer.domElement); };
-  }, [windAngle, airflow, resetSignal, subjectModel, customPart, riderPreset, surfaceType, assetUrls.bicycle, assetUrls.rider, assetUrls.custom, assetTransforms]);
+  }, [windAngle, airflow, resetSignal, subjectModel, customPart, riderPreset, surfaceType, assetUrls.bicycle, assetUrls.rider, assetUrls.custom, assetTransforms, qualityMode]);
   return <div ref={host} className="scene-host" aria-label={`Interactive 3D ${subjectModel} with ${riderPreset} and ${customPart}`} />;
 }
 
@@ -267,6 +270,7 @@ export default function Home() {
   const [customAsset, setCustomAsset] = useState<LocalAsset | null>(null);
   const [assetTransforms, setAssetTransforms] = useState<Record<AssetRole, RoleTransform>>(defaultRoleTransforms);
   const [selectedRole, setSelectedRole] = useState<AssetRole>("bicycle");
+  const [qualityMode, setQualityMode] = useState<QualityMode>("balanced");
   const gizmoDragRef = useRef<{ x: number; y: number } | null>(null);
   const [assetInputError, setAssetInputError] = useState("");
   const airDensity = Number(((pressure * 100) / (287.05 * (temperature + 273.15))).toFixed(3));
@@ -310,7 +314,7 @@ export default function Home() {
   const prepareGeometry = () => { setGeometryStatus("Spec ready / mesh pending"); setPreparedAt(new Date()); setSimulationStatus(readinessScore === 100 ? "Case ready for solver handoff" : "Spec ready / mesh pending"); };
   const saveCase = () => {
     if (!preparedAt) return;
-      const nextCase: SavedCase = { id: createCaseId(), name: caseName.trim() || "Untitled geometry case", model: subjectModel, wheelbase, wheelDiameter, riderHeight, preparedAt: preparedAt.toISOString(), status: simulationStatus, flowModel, solverModel, turbulenceModel, groundCondition, meshTarget, boundaryLayerLayers, domainLength, iterations, residualExponent, referenceArea, characteristicLength, dynamicViscosity, subjectModel, riderPreset, customPart, location, weather, surfaceType, trackSlope, bikeSlope, airflowDirection, airflowSpeed, airTemperature, chainType, acceleration, assetMeta: { ...(localAsset ? { bicycle: { fileName: localAsset.fileName, type: localAsset.type, size: localAsset.size } } : {}), ...(riderAsset ? { rider: { fileName: riderAsset.fileName, type: riderAsset.type, size: riderAsset.size } } : {}), ...(customAsset ? { custom: { fileName: customAsset.fileName, type: customAsset.type, size: customAsset.size } } : {}) }, assetTransforms };
+      const nextCase: SavedCase = { id: createCaseId(), name: caseName.trim() || "Untitled geometry case", model: subjectModel, wheelbase, wheelDiameter, riderHeight, preparedAt: preparedAt.toISOString(), status: simulationStatus, flowModel, solverModel, turbulenceModel, groundCondition, meshTarget, boundaryLayerLayers, domainLength, iterations, residualExponent, referenceArea, characteristicLength, dynamicViscosity, subjectModel, riderPreset, customPart, location, weather, surfaceType, trackSlope, bikeSlope, airflowDirection, airflowSpeed, airTemperature, chainType, acceleration, assetMeta: { ...(localAsset ? { bicycle: { fileName: localAsset.fileName, type: localAsset.type, size: localAsset.size } } : {}), ...(riderAsset ? { rider: { fileName: riderAsset.fileName, type: riderAsset.type, size: riderAsset.size } } : {}), ...(customAsset ? { custom: { fileName: customAsset.fileName, type: customAsset.type, size: customAsset.size } } : {}) }, assetTransforms, qualityMode };
     setSavedCases((current) => [nextCase, ...current].slice(0, 8));
     setHistoryOpen(true);
   };
@@ -320,6 +324,7 @@ export default function Home() {
     setRiderAsset(null);
     setCustomAsset(null);
     setAssetTransforms(savedCase.assetTransforms ? { ...defaultRoleTransforms, ...savedCase.assetTransforms } : defaultRoleTransforms);
+    setQualityMode(savedCase.qualityMode ?? "balanced");
     setAssetInputError("");
     setSubjectModel(savedCase.subjectModel ?? savedCase.model ?? "Aero road / R-01");
     setRiderPreset(savedCase.riderPreset ?? "Rider / fixed aero");
@@ -368,6 +373,7 @@ export default function Home() {
       validation: { referenceArea_m2: referenceArea, characteristicLength_m: characteristicLength, dynamicViscosity_PaS: viscosityPaS, reynoldsNumber: Math.round(reynoldsNumber), dynamicPressure_Pa: Number(dynamicPressure.toFixed(2)), forceModelCd: Number(forceModelCd.toFixed(3)), derivedDragForce_N: Number(derivedDragForce.toFixed(2)) },
       assets: { bicycle: localAsset ? { fileName: localAsset.fileName, type: localAsset.type, sizeBytes: localAsset.size } : null, rider: riderAsset ? { fileName: riderAsset.fileName, type: riderAsset.type, sizeBytes: riderAsset.size } : null, custom: customAsset ? { fileName: customAsset.fileName, type: customAsset.type, sizeBytes: customAsset.size } : null, storage: "local browser object URL only" },
       transforms: assetTransforms,
+      qualityMode,
       readiness: { scorePercent: readinessScore, status: simulationStatus },
       preparedAt: preparedAt?.toISOString() ?? new Date().toISOString(),
     };
@@ -398,7 +404,7 @@ export default function Home() {
       <header className="topbar"><div><div className="eyebrow">OBSERVATION BAY / CASE 01</div><h1>See what the air is doing.</h1></div><div className="top-actions"><span className="data-chip"><span className="chip-dot" />SIMULATION PREVIEW</span><button className="ghost-button" onClick={() => setHistoryOpen((open) => !open)} aria-expanded={historyOpen}><History size={15} /> Cases <span className="case-count">{savedCases.length}</span></button></div></header>
       {historyOpen && <section className="history-panel" aria-label="Saved geometry cases"><div className="history-heading"><div><div className="eyebrow">CASE ARCHIVE / LOCAL</div><h2>Prepared geometry cases.</h2><p>Saved in this browser only. Restore a specification to continue working from its dimensions.</p></div><button className="history-close" onClick={() => setHistoryOpen(false)} aria-label="Close case archive">Close</button></div>{savedCases.length === 0 ? <div className="history-empty"><History size={18} /><strong>No saved cases yet.</strong><span>Prepare a geometry specification, then save it here for quick comparison.</span></div> : <div className="history-list">{savedCases.map((savedCase) => <article className="history-row" key={savedCase.id}><div className="history-row-main"><div className="history-row-title"><strong>{savedCase.name}</strong><span className="history-status">{savedCase.status}</span></div><span>{savedCase.model} · prepared {new Date(savedCase.preparedAt).toLocaleDateString([], { month: "short", day: "numeric" })}</span><small>Wheelbase {savedCase.wheelbase.toFixed(2)} m · wheel Ø {savedCase.wheelDiameter.toFixed(2)} m · rider {savedCase.riderHeight.toFixed(2)} m</small></div><div className="history-row-actions"><button className="restore-button" onClick={() => restoreCase(savedCase)}>Restore</button><button className="delete-button" onClick={() => deleteCase(savedCase.id)}>Delete</button></div></article>)}</div>}</section>}
       <div className="workspace-grid">
-        <section className="viewport-card"><div className="viewport-header"><div><span className="eyebrow">3D FLOW FIELD</span><div className="viewport-title">{subjectModel} · {weather.toLowerCase()} · {flowModel.toLowerCase()}</div></div><div className="viewport-tools"><button className={`mini-toggle ${airflow ? "active" : ""}`} onClick={() => setAirflow(!airflow)}><Wind size={14} /> Streamlines</button><button className="mini-toggle" onClick={() => setResetSignal((value) => value + 1)}><RotateCcw size={14} /> Reset view</button></div></div><div className="viewport"><Scene windAngle={windAngle} airflow={airflow} resetSignal={resetSignal} subjectModel={subjectModel} customPart={customPart} riderPreset={riderPreset} surfaceType={surfaceType} assetUrls={{ bicycle: localAsset?.url, rider: riderAsset?.url, custom: customAsset?.url }} assetTransforms={assetTransforms} /><div className="viewport-overlay"><span>VELOCITY MAGNITUDE</span><div className="legend"><i className="legend-cool" /> 0 <i className="legend-hot" /> 18 m/s</div></div><div className="sensor-tag sensor-inlet">S-01 / INLET</div><div className="sensor-tag sensor-wake">S-04 / WAKE FIELD</div><div className="calibration-line"><span>0</span><i /><i /><i /><i /><span>3.0 m</span></div><div className="axis"><span>Y</span><span>X</span><span>Z</span></div><div className="origin-gizmo" aria-label="Viewport coordinate frame"><span className="gizmo-x">X</span><span className="gizmo-y">Y</span><span className="gizmo-z">Z</span><i className="gizmo-center" /></div><div className="gizmo-drag-pad" onPointerDown={handleGizmoPointerDown} onPointerMove={handleGizmoPointerMove} onPointerUp={handleGizmoPointerUp} onPointerCancel={handleGizmoPointerUp} aria-label={`Drag to adjust ${roleLabels[selectedRole]} yaw and origin`}><span>DRAG {roleLabels[selectedRole].toUpperCase()}</span><b>↕</b><i>↔</i></div></div><div className="viewport-footer"><span><b className="live-mark" /> Geometry preview</span><span>Mesh status <strong>not generated</strong></span><span>Drag to orbit · wheel to zoom</span></div></section>
+        <section className="viewport-card"><div className="viewport-header"><div><span className="eyebrow">3D FLOW FIELD</span><div className="viewport-title">{subjectModel} · {weather.toLowerCase()} · {flowModel.toLowerCase()}</div></div><div className="viewport-tools"><button className={`mini-toggle ${airflow ? "active" : ""}`} onClick={() => setAirflow(!airflow)}><Wind size={14} /> Streamlines</button><label className="quality-control"><span>DETAIL</span><select value={qualityMode} onChange={(e) => { markSimulationChanged(); setQualityMode(e.target.value as QualityMode); }} aria-label="Preview detail quality"><option value="low">Low</option><option value="balanced">Balanced</option><option value="high">High</option></select></label><button className="mini-toggle" onClick={() => setResetSignal((value) => value + 1)}><RotateCcw size={14} /> Reset view</button></div></div><div className="viewport"><Scene windAngle={windAngle} airflow={airflow} resetSignal={resetSignal} subjectModel={subjectModel} customPart={customPart} riderPreset={riderPreset} surfaceType={surfaceType} assetUrls={{ bicycle: localAsset?.url, rider: riderAsset?.url, custom: customAsset?.url }} assetTransforms={assetTransforms} qualityMode={qualityMode} /><div className="viewport-overlay"><span>VELOCITY MAGNITUDE</span><div className="legend"><i className="legend-cool" /> 0 <i className="legend-hot" /> 18 m/s</div></div><div className="sensor-tag sensor-inlet">S-01 / INLET</div><div className="sensor-tag sensor-wake">S-04 / WAKE FIELD</div><div className="calibration-line"><span>0</span><i /><i /><i /><i /><span>3.0 m</span></div><div className="axis"><span>Y</span><span>X</span><span>Z</span></div><div className="origin-gizmo" aria-label="Viewport coordinate frame"><span className="gizmo-x">X</span><span className="gizmo-y">Y</span><span className="gizmo-z">Z</span><i className="gizmo-center" /></div><div className="gizmo-drag-pad" onPointerDown={handleGizmoPointerDown} onPointerMove={handleGizmoPointerMove} onPointerUp={handleGizmoPointerUp} onPointerCancel={handleGizmoPointerUp} aria-label={`Drag to adjust ${roleLabels[selectedRole]} yaw and origin`}><span>DRAG {roleLabels[selectedRole].toUpperCase()}</span><b>↕</b><i>↔</i></div></div><div className="viewport-footer"><span><b className="live-mark" /> Geometry preview</span><span>Mesh status <strong>not generated</strong></span><span>Drag to orbit · wheel to zoom</span></div></section>
         <aside className="results-card"><div className="card-kicker"><span className="eyebrow">RESULT LEDGER</span><span className="confidence">PREVIEW</span></div><div className="drag-readout"><span>{modified ? "Estimated drag force / modified" : "Estimated drag force / baseline"}</span><strong>{modified ? "30.6" : "31.8"}<small>N</small></strong><span className="delta positive">{modified ? "↓ 7.8% vs baseline" : "↓ 4.2% vs reference"}</span></div><div className="metric-list"><Metric label="CdA" value={modified ? "0.274" : "0.286"} unit="m²" tone="copper" /><Metric label="Power at speed" value="287" unit="W" /><Metric label="Air density" value={String(airDensity)} unit="kg/m³" /><Metric label="Flow state" value="Steady" /></div><div className="result-note"><Zap size={14} /><span>Measured values will appear after a CFD case is completed.</span></div><div className="wake-inset"><img src="/manus-storage/bicycle-aero-lab-wake_a66155fa.png" alt="Preview of a bicycle wake field" /><span>WAKE PREVIEW / NEXT SOLVER PASS</span></div></aside>
       </div>
       <section className="control-strip" style={{ backgroundImage: "linear-gradient(90deg, rgba(248,247,242,.98) 0%, rgba(248,247,242,.94) 58%, rgba(248,247,242,.72) 100%), url('/manus-storage/bicycle-aero-lab-terrain_8efdba22.png')", backgroundSize: "cover", backgroundPosition: "right center" }}><div className="control-heading"><div className="eyebrow">CASE PARAMETERS</div><h2>{modified ? "Compare the integration against baseline." : "Run the baseline before changing the shape."}</h2><p>These controls define the first steady-flow experiment.</p></div><div className="control-field"><div className="field-label"><span><b className="field-trace" />Ground speed</span><strong>{speed} <small>km/h</small></strong></div><input type="range" min="10" max="80" value={speed} onChange={(e) => setSpeed(Number(e.target.value))} /></div><div className="control-field"><div className="field-label"><span><b className="field-trace" />Crosswind angle</span><strong>{windAngle > 0 ? "+" : ""}{windAngle} <small>°</small></strong></div><input type="range" min="-30" max="30" value={windAngle} onChange={(e) => setWindAngle(Number(e.target.value))} /></div><button className="run-button" onClick={run} disabled={solverIsRunning}><Play size={16} fill="currentColor" />{solverIsRunning ? solverStageLabels[solverStage] : !preparedAt ? "Prepare first" : solverStage === "review" ? "Run again" : modified ? "Compare case" : "Run baseline"}</button></section>
