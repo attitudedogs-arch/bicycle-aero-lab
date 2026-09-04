@@ -64,3 +64,11 @@ The shared project already contains the CFD-ready geometry milestone from the pr
 - [x] Show asset names, file types, size, and local-only status without uploading files.
 - [x] Include asset metadata in saved cases and manifests where available.
 - [x] Verify empty, selected, invalid, and reset states on desktop and mobile, then save a checkpoint.
+
+## Next milestone — independent asset roles
+
+- [x] Define separate bicycle, rider, and custom-part local asset state with procedural fallbacks.
+- [x] Add role-specific file inputs, validation, metadata, and clear actions.
+- [x] Compose the loaded role assets into the 3D preview with stable framing.
+- [x] Include per-role asset metadata in saved cases and manifests.
+- [x] Verify empty, mixed, and reset states on desktop and mobile, then save a checkpoint.
