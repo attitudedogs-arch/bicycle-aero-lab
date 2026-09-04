@@ -48,3 +48,11 @@ The shared project already contains the CFD-ready geometry milestone from the pr
 - [x] Add a run control and visible progress timeline with explanatory status text.
 - [x] Preserve the distinction between simulated UI progress and real CFD output.
 - [x] Verify reset and completion behavior on desktop and mobile, then save a checkpoint.
+
+## Next milestone — expanded case builder
+
+- [x] Add staged 3D subject options for bicycle, rider, and custom-part configurations without overstating asset availability.
+- [x] Add cycle, rider posture, mass, dimensions, and custom aerodynamic-part inputs.
+- [x] Add location, weather, terrain, surface, slope, and directional airflow controls.
+- [x] Connect the expanded case definition to readiness, saved cases, manifests, and preview labels.
+- [x] Verify the richer builder on desktop and mobile, then save a checkpoint.
