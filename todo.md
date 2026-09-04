@@ -1,9 +1,18 @@
-# Bicycle Aero Lab — Next Milestone
+# Bicycle Aero Lab — CFD Preparation Milestone
 
-- [x] Add mouse drag rotation to the Three.js observation bay.
-- [x] Add wheel zoom and a reset-view action.
-- [x] Keep the camera responsive without making the scene heavy for the user's laptop.
-- [x] Add baseline versus modified experiment state.
-- [x] Add a first modification control with clearly labelled preview status.
-- [x] Verify the 3D interaction, controls, and TypeScript build.
-- [ ] Save the next working checkpoint.
+## Scientific inputs
+
+- [x] Add speed, wind angle, air temperature, pressure, rider mass, bicycle mass, and geometry scale inputs.
+- [x] Show air-density provenance and distinguish user inputs from calculated values.
+
+## Solver preparation
+
+- [x] Add a geometry-readiness panel for watertight geometry and mesh status.
+- [x] Add a solver workflow state: setup, mesh, solve, post-process, review.
+- [x] Keep preview values visibly separate from future CFD-calculated values.
+
+## Validation
+
+- [x] Verify input controls and status transitions.
+- [x] Run TypeScript and production build checks.
+- [ ] Save the CFD-preparation checkpoint.
