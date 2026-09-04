@@ -33,3 +33,11 @@ The shared project already contains the CFD-ready geometry milestone from the pr
 - [x] Show a time-evolving readiness summary as settings become defined.
 - [x] Include the detailed settings in saved cases and manifests.
 - [x] Verify the expanded workflow on desktop and mobile, then save a checkpoint.
+
+## Next milestone — dimensionless validation
+
+- [x] Add reference area and characteristic length inputs.
+- [x] Calculate Reynolds number from density, speed, viscosity, and characteristic length.
+- [x] Show the force-model basis and derived aerodynamic force readout.
+- [x] Include validation quantities in saved cases and manifests.
+- [x] Verify the validation layer on desktop and mobile, then save a checkpoint.

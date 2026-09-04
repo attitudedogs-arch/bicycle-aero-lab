@@ -238,3 +238,30 @@ input[type=range] { width: 100%; accent-color: #c96b3b; height: 4px; }
 @media (max-width: 420px) {
   .simulation-grid { grid-template-columns: 1fr; }
 }
+
+
+.validation-panel { margin-top: 15px; display: grid; grid-template-columns: 1fr 1.8fr; gap: 22px; padding: 20px; border: 1px solid #d1d1ca; background: #f8f7f2; box-shadow: 0 14px 36px rgba(47,51,49,.045); }
+.validation-heading h2 { margin: 7px 0 5px; color: #304047; font-family: 'Space Grotesk', sans-serif; font-size: 16px; letter-spacing: -.03em; }
+.validation-heading p { margin: 0; color: #8a9290; font-size: 11px; line-height: 1.5; max-width: 300px; }
+.validation-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; border-left: 1px solid #dddcd4; padding-left: 20px; }
+.validation-field { display: grid; gap: 8px; color: #717d7b; font-size: 10px; }
+.validation-field span { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; }
+.validation-field strong { color: #33454b; font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 500; white-space: nowrap; }
+.validation-field input[type=range] { width: 100%; }
+.validation-ledger { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; border-top: 1px solid #dddcd4; padding-top: 15px; }
+.validation-ledger > div { display: grid; gap: 4px; padding: 0 15px; border-left: 1px solid #e1e0d9; }
+.validation-ledger > div:first-child { border-left: 0; padding-left: 0; }
+.validation-ledger span { color: #7d8986; font-size: 10px; }
+.validation-ledger strong { color: #c96b3b; font-family: 'Space Grotesk', sans-serif; font-size: 18px; letter-spacing: -.04em; }
+.validation-ledger small { color: #909996; font-family: 'IBM Plex Mono', monospace; font-size: 8px; }
+@media (max-width: 1180px) {
+  .validation-panel { grid-template-columns: 1fr; }
+  .validation-grid { border-left: 0; border-top: 1px solid #dddcd4; padding: 18px 0 0; }
+}
+@media (max-width: 680px) {
+  .validation-panel { padding: 16px; gap: 18px; }
+  .validation-grid { grid-template-columns: 1fr; gap: 14px; }
+  .validation-ledger { grid-template-columns: 1fr 1fr; gap: 14px 0; }
+  .validation-ledger > div:nth-child(odd) { border-left: 0; padding-left: 0; }
+  .validation-ledger > div:nth-child(even) { padding-right: 0; }
+}
