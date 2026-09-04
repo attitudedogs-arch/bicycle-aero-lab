@@ -109,3 +109,11 @@ The shared project already contains the CFD-ready geometry milestone from the pr
 - [x] Add a quality selector and connect it to wheel, spoke, tube, rider, and shadow detail.
 - [x] Persist the selected quality mode in saved cases and manifests.
 - [x] Verify the modes on desktop and mobile, then save a checkpoint.
+
+## Next milestone — wheel and realism correction
+
+- [x] Audit and correct wheel, hub, spoke, and tire orientation in the procedural model.
+- [x] Add visible tire sidewalls, rim depth, axle spacing, and fork alignment so the bicycle reads in three dimensions.
+- [x] Refine frame tube proportions, rider seating/contact points, and material separation to reduce the Roblox-like appearance.
+- [x] Add explicit preview-versus-true-asset labeling and preserve local GLB/GLTF overrides.
+- [x] Verify the corrected preview on desktop and mobile, then save a checkpoint.
