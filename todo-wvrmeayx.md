@@ -18,3 +18,10 @@ The shared project already contains the CFD-ready geometry milestone from the pr
 - [x] Surface a compact export manifest with dimensions, posture, and readiness checks.
 - [x] Add clear success feedback without implying a real CAD or CFD file has been generated.
 - [x] Verify the flow on desktop and mobile, then save a checkpoint.
+
+## Next milestone — saved case history
+
+- [x] Define a browser-local saved-case model for prepared geometry specifications.
+- [x] Add a history drawer or panel with case metadata and restore actions.
+- [x] Persist saved cases across refreshes without touching backend code.
+- [x] Verify save, restore, delete, and empty states on desktop and mobile, then save a checkpoint.
