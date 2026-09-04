@@ -72,3 +72,10 @@ The shared project already contains the CFD-ready geometry milestone from the pr
 - [x] Compose the loaded role assets into the 3D preview with stable framing.
 - [x] Include per-role asset metadata in saved cases and manifests.
 - [x] Verify empty, mixed, and reset states on desktop and mobile, then save a checkpoint.
+
+## Next milestone — per-role transforms
+
+- [x] Define scale, yaw, pitch, roll, and origin-alignment state for bicycle, rider, and custom-part roles.
+- [x] Add compact transform controls with live preview updates and reset actions.
+- [x] Persist transform metadata in saved cases and manifests.
+- [x] Verify transform behavior and responsive controls on desktop and mobile, then save a checkpoint.
