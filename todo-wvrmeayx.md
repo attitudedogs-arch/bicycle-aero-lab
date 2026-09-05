@@ -125,3 +125,11 @@ The shared project already contains the CFD-ready geometry milestone from the pr
 - [x] Add a simulation review toolbar, calibrated legends, probe readouts, and clear preview-versus-CFD messaging.
 - [x] Connect the review state to the current case inputs, solver timeline, saved cases, and manifests.
 - [x] Verify the simulation review on desktop and mobile, then save a checkpoint.
+
+## Next milestone — provided bicycle GLB integration
+
+- [x] Inspect the supplied GLB metadata and confirm it can be loaded by the existing Three.js GLTF path.
+- [x] Make the provided bicycle GLB the primary bicycle preview asset with a clear local-asset status.
+- [x] Calibrate wheel-axis orientation, scale, ground contact, and camera framing without breaking rider/custom-part fallbacks.
+- [x] Preserve asset metadata, transforms, quality mode, result layer, and simulation manifest behavior.
+- [x] Verify the supplied model in the wind-tunnel preview on desktop and mobile, then save a checkpoint.
