@@ -55,16 +55,16 @@ function poseRider(root: THREE.Object3D) {
   const rightThigh = find("rightupleg", "rightthigh");
   const leftShin = find("leftleg", "leftlowerleg");
   const rightShin = find("rightleg", "rightlowerleg");
-  spine?.rotation.x = -0.28;
-  spine2?.rotation.x = -0.2;
-  leftUpperArm?.rotation.z = -0.3;
-  rightUpperArm?.rotation.z = 0.3;
-  leftForearm?.rotation.z = -0.8;
-  rightForearm?.rotation.z = 0.8;
-  leftThigh?.rotation.x = -0.7;
-  rightThigh?.rotation.x = 0.7;
-  leftShin?.rotation.x = 1.15;
-  rightShin?.rotation.x = 1.15;
+  if (spine) spine.rotation.x = -0.28;
+  if (spine2) spine2.rotation.x = -0.2;
+  if (leftUpperArm) leftUpperArm.rotation.z = -0.3;
+  if (rightUpperArm) rightUpperArm.rotation.z = 0.3;
+  if (leftForearm) leftForearm.rotation.z = -0.8;
+  if (rightForearm) rightForearm.rotation.z = 0.8;
+  if (leftThigh) leftThigh.rotation.x = -0.7;
+  if (rightThigh) rightThigh.rotation.x = 0.7;
+  if (leftShin) leftShin.rotation.x = 1.15;
+  if (rightShin) rightShin.rotation.x = 1.15;
 }
 
 function loadPrimary(scene: THREE.Scene, role: "bicycle" | "rider", url: string) {
